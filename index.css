@@ -1,0 +1,462 @@
+:root {
+    --bg-color: #ffffff;
+    --text-main: #222222;
+    --text-muted: #555555;
+    --accent-yellow: #ffdc46;
+    --accent-blue: #2c6beb;
+    --border-color: #222222;
+    --border-width: 3px;
+    --font-heading: 'Shrikhand', cursive;
+    --font-body: 'Noto Sans JP', sans-serif;
+    --transition-speed: 0.2s;
+    --hard-shadow: 4px 4px 0px var(--border-color);
+    --hard-shadow-hover: 2px 2px 0px var(--border-color);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    /* Cute dotted background pattern */
+    background-image: radial-gradient(var(--accent-yellow) 15%, transparent 15%), radial-gradient(var(--accent-yellow) 15%, transparent 15%);
+    background-position: 0 0, 20px 20px;
+    background-size: 40px 40px;
+}
+
+.pop-background-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.85); /* Tone down the dots */
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Top Navigation */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #ffffff;
+    border-bottom: var(--border-width) solid var(--border-color);
+    box-shadow: 0px 4px 0px var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.pop-text {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    color: var(--accent-blue);
+    text-shadow: 2px 2px 0px var(--border-color);
+    letter-spacing: 2px;
+}
+
+.sub-logo {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--accent-yellow);
+    text-shadow: 1px 1px 0px var(--border-color);
+    letter-spacing: 1px;
+}
+
+.main-nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    background: #ffffff;
+    border: var(--border-width) solid var(--border-color);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    box-shadow: 2px 2px 0px var(--border-color);
+    transition: all var(--transition-speed) ease;
+}
+
+.nav-btn i {
+    margin-right: 0.5rem;
+    color: var(--accent-blue);
+}
+
+.nav-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px var(--border-color);
+}
+
+.nav-btn.active {
+    background: var(--accent-yellow);
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px var(--border-color);
+}
+.nav-btn.active i {
+    color: var(--text-main);
+}
+
+.user-status {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1rem;
+    background: #ffffff;
+    padding: 0.4rem 1rem;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: 20px;
+}
+
+/* Layout */
+.container {
+    max-width: 1200px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+}
+
+/* Common Components */
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    color: var(--text-main);
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 2px 2px 0px var(--accent-yellow);
+    letter-spacing: 2px;
+}
+
+.cyber-card { /* Kept the class name for JS compatibility but changed style */
+    background: #ffffff;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--hard-shadow);
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.cyber-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--border-color);
+}
+
+/* Buttons */
+.cyber-btn {
+    background: var(--accent-yellow);
+    color: var(--text-main);
+    border: var(--border-width) solid var(--border-color);
+    padding: 0.6rem 1.5rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all var(--transition-speed) ease;
+    box-shadow: var(--hard-shadow);
+    text-align: center;
+}
+
+.cyber-btn:hover {
+    background: #ffeb85;
+    transform: translate(2px, 2px);
+    box-shadow: var(--hard-shadow-hover);
+}
+
+.cyber-btn:disabled {
+    background: #dddddd;
+    color: #888888;
+    cursor: not-allowed;
+    transform: translate(2px, 2px);
+    box-shadow: var(--hard-shadow-hover);
+}
+
+.cyber-btn.danger {
+    background: #ff6b6b;
+    color: white;
+}
+.cyber-btn.danger:hover {
+    background: #ff8c8c;
+}
+
+/* Inputs */
+.cyber-input {
+    background: #f4f4f4;
+    border: var(--border-width) solid var(--border-color);
+    color: var(--text-main);
+    padding: 0.8rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    border-radius: 8px;
+    width: 100%;
+    transition: all var(--transition-speed) ease;
+    outline: none;
+    box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1);
+}
+
+.cyber-input:focus {
+    background: #ffffff;
+    border-color: var(--accent-blue);
+}
+
+/* Grids */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+/* Status Indicators */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 2px solid var(--border-color);
+    box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.status-available {
+    background: #a8ffb2;
+    color: var(--text-main);
+}
+
+.status-borrowed {
+    background: #ffb8c6;
+    color: var(--text-main);
+}
+
+/* News Section */
+.news-item {
+    padding: 1rem;
+    border-bottom: 2px dashed var(--border-color);
+}
+.news-item:last-child {
+    border-bottom: none;
+}
+.news-date {
+    font-size: 0.9rem;
+    color: var(--accent-blue);
+    font-family: var(--font-heading);
+    margin-bottom: 0.3rem;
+}
+
+/* Book Details */
+.book-cover {
+    height: 150px;
+    background: var(--accent-blue);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    box-shadow: inset -5px -5px 0px rgba(0,0,0,0.2);
+}
+
+.book-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.book-meta {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* Roster Profile */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent-yellow);
+    border: var(--border-width) solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.badge {
+    background: #e0f0ff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 2px solid var(--border-color);
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin-top: 1rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    background: #f9f9f9;
+    border: 2px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.7rem;
+    top: 0.5rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent-yellow);
+    border: 3px solid var(--border-color);
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(44, 107, 235, 0.5); /* Blueish overlay */
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background: var(--bg-color);
+    border: 4px solid var(--border-color);
+    box-shadow: 8px 8px 0px var(--border-color);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy pop animation */
+}
+
+.modal-overlay.hidden .modal-content {
+    transform: scale(0.8);
+}
+
+.modal-close {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    width: 40px;
+    height: 40px;
+    background: #ff6b6b;
+    border: var(--border-width) solid var(--border-color);
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px var(--border-color);
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    transform: scale(1.1);
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+/* Animations */
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.view-animate {
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; /* Pop bouncy effect */
+}
