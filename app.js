@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURATION & STATE
 // ==========================================
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxET91FhDNLfIqgmHUJoSaYWtWTCZwRs65YBewCVicTMqdLLhWVD4iYcyKWpvzRcmgb/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxbtJFyrBLgl60SdUTE-uGMoLs2lKswW74IfjIFyD0Tue8IhGeNHT6WYsc-RudS2ARV/exec';
 let currentView = 'home';
 let viewHistory = [];
 let isLoading = true;
@@ -210,22 +210,49 @@ function renderRoster() {
         <div class="view-animate">
             ${getBackButtonHtml()}
             <h1 class="section-title">メンバー名簿</h1>
-            <div class="grid-2">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 ${mockData.members.map(member => `
-                    <div class="cyber-card">
-                        <div class="profile-header">
+                    <div class="cyber-card member-card" style="cursor: pointer;" onclick="toggleMemberDetails('${member.squadNumber}')">
+                        <div class="profile-header" style="margin-bottom: 0;">
                             <div class="avatar">${member.squadNumber}</div>
-                            <div>
-                                <h3 style="color: var(--accent-green); margin-bottom: 0.2rem;">${member.name}</h3>
-                                <div style="font-family: var(--font-heading); font-size: 0.8rem; color: var(--text-muted);">
-                                    タイピングスコア: <span style="color: var(--text-main);">${member.typingScore}</span>
+                            <div class="profile-info" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                                <h3 style="color: var(--accent-green); margin-bottom: 0.4rem; font-size: 1.4rem;">${member.name}</h3>
+                                <div style="font-family: var(--font-heading); font-size: 0.95rem; color: var(--text-muted); display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                                    <span>背番号: <span style="color: var(--text-main); font-weight: bold;">${member.squadNumber}</span></span>
+                                    <span>カテゴリー: <span style="color: var(--text-main); font-weight: bold;">${member.category || '未登録'}</span></span>
                                 </div>
                             </div>
+                            <div class="accordion-icon" id="icon-${member.squadNumber}" style="color: var(--accent-blue); font-size: 1.5rem; margin-right: 1rem; display: flex; align-items: center;">
+                                <i class="fa-solid fa-chevron-down transition-icon"></i>
+                            </div>
                         </div>
-                        <div style="margin-top: 1rem;">
-                            <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">獲得バッジ</h4>
-                            <div class="badge-list">
-                                ${member.badges && member.badges.length > 0 ? member.badges.map(badge => `<span class="badge">${badge}</span>`).join('') : '<span style="color: var(--text-muted); font-size: 0.8rem;">なし</span>'}
+                        <div id="details-${member.squadNumber}" class="member-details">
+                            <div class="detail-row">
+                                <div>
+                                    <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">タイピング記録</h4>
+                                    <div style="font-weight: bold;">${member.typingScore || '未登録'}</div>
+                                </div>
+                                <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openEditMemberModal('${member.squadNumber}', 'typingScore', '${member.typingScore || ''}')"><i class="fa-solid fa-pen"></i> 編集</button>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <div style="flex: 1;">
+                                    <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">バッジ</h4>
+                                    <div class="badge-list">
+                                        ${member.badges && member.badges.length > 0 ? member.badges.map(badge => `<span class="badge">${badge}</span>`).join('') : '<span style="color: var(--text-muted); font-size: 0.8rem;">なし</span>'}
+                                    </div>
+                                </div>
+                                <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openEditMemberModal('${member.squadNumber}', 'badges', '${(member.badges || []).join(',')}')"><i class="fa-solid fa-pen"></i> 編集</button>
+                            </div>
+
+                            <div class="detail-row">
+                                <div style="flex: 1;">
+                                    <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">読書記録</h4>
+                                    <div style="font-size: 0.9rem;">
+                                        ${member.readingRecord && member.readingRecord.length > 0 ? member.readingRecord.map(rec => `<div style="margin-bottom:0.2rem;">・${rec}</div>`).join('') : '<span style="color: var(--text-muted); font-size: 0.8rem;">なし</span>'}
+                                    </div>
+                                </div>
+                                <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openEditMemberModal('${member.squadNumber}', 'readingRecord', '${(member.readingRecord || []).join(',')}')"><i class="fa-solid fa-pen"></i> 編集</button>
                             </div>
                         </div>
                     </div>
@@ -236,26 +263,60 @@ function renderRoster() {
     appRoot.innerHTML = html;
 }
 
+function toggleMemberDetails(squadNum) {
+    const detailsDiv = document.getElementById(`details-${squadNum}`);
+    const iconDiv = document.getElementById(`icon-${squadNum}`);
+    if(detailsDiv) {
+        detailsDiv.classList.toggle('open');
+    }
+    if(iconDiv) {
+        iconDiv.classList.toggle('open');
+    }
+}
+
 function renderSchedule() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title">イベントスケジュール</h1>
+            <h1 class="section-title" style="margin-bottom: 1rem;">イベントスケジュール</h1>
+            <div style="text-align: right; margin-bottom: 1.5rem;">
+                <button class="cyber-btn" onclick="openPasswordModal('addEvent')"><i class="fa-solid fa-plus"></i> イベントを追加</button>
+            </div>
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                ${mockData.events.map(event => `
-                    <div class="cyber-card" style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
+                ${mockData.events.map(event => {
+                    const attendeesCount = event.attendees ? event.attendees.length : 0;
+                    const capacity = event.capacity ? Number(event.capacity) : 0;
+                    const isFull = capacity > 0 && attendeesCount >= capacity;
+                    
+                    return `
+                    <div class="cyber-card" style="display: flex; justify-content: space-between; align-items: stretch;">
+                        <div style="flex: 1; margin-right: 1rem;">
                             <div class="news-date">${event.date}</div>
-                            <h3 style="margin-bottom: 0.5rem;">${event.title}</h3>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                参加者: ${event.attendees && event.attendees.length > 0 ? event.attendees.join(', ') : 'まだいません'}
+                            <h3 style="margin-bottom: 0.5rem; color: var(--accent-blue);">${event.title}</h3>
+                            ${event.description ? `<p style="margin-bottom: 0.5rem; font-size: 0.9rem;">${event.description}</p>` : ''}
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">
+                                参加者:
+                            </div>
+                            <div class="event-attendees">
+                                ${attendeesCount > 0 
+                                    ? event.attendees.map(a => `<span class="attendee-tag">${String(a).trim()}</span>`).join('') 
+                                    : '<span style="color: var(--text-muted); font-size: 0.85rem;">まだいません</span>'}
+                            </div>
+                            <div style="font-size: 0.85rem; font-weight: bold; color: ${isFull ? '#ff6b6b' : 'var(--text-main)'};">
+                                現在の参加人数: ${attendeesCount} / ${capacity || '無制限'}
                             </div>
                         </div>
-                        <div>
-                            <button class="cyber-btn" onclick="openAttendanceModal('${event.id}')">出欠登録</button>
+                        <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; min-width: 100px;">
+                            <button class="cyber-btn danger" style="padding: 0.4rem; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" onclick="openPasswordModal('deleteEvent', '${event.id}')" title="削除">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <button class="cyber-btn" ${isFull ? 'disabled' : ''} style="margin-top: auto; padding: 0.5rem 1rem;" onclick="openAttendanceModal('${event.id}')">
+                                ${isFull ? '満員' : '出欠登録'}
+                            </button>
                         </div>
                     </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         </div>
     `;
@@ -374,6 +435,138 @@ async function submitAttendance(eventId, status) {
     document.getElementById('btn-absent').disabled = true;
 
     const success = await sendAction('updateAttendance', { eventId, squadNum, status });
+    if (success) {
+        closeModal();
+    }
+}
+
+function openPasswordModal(actionType, payload = null) {
+    let payloadArg = payload ? `'${payload}'` : 'null';
+    let html = `
+        <h2 style="margin-bottom: 1rem; color: var(--accent-yellow);"><i class="fa-solid fa-lock"></i> 認証が必要です</h2>
+        <p style="margin-bottom: 1.5rem;">この操作を実行するにはパスワードを入力してください。</p>
+        
+        <div class="form-group">
+            <input type="password" id="passwordInput" class="cyber-input" placeholder="パスワードを入力">
+        </div>
+        <button class="cyber-btn" style="width: 100%;" onclick="submitPassword('${actionType}', ${payloadArg})">認証</button>
+    `;
+    openModal(html);
+}
+
+function submitPassword(actionType, payload) {
+    const pwd = document.getElementById('passwordInput').value;
+    if(pwd === '20230914') {
+        if(actionType === 'addEvent') {
+            openAddEventModal();
+        } else if(actionType === 'deleteEvent') {
+            confirmDeleteEvent(payload);
+        }
+    } else {
+        alert("パスワードが間違っています。");
+    }
+}
+
+function openAddEventModal() {
+    let html = `
+        <h2 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-calendar-plus"></i> イベントを追加</h2>
+        
+        <div class="form-group">
+            <label>イベント名</label>
+            <input type="text" id="addEventTitle" class="cyber-input" placeholder="例: 臨時ミーティング">
+        </div>
+        <div class="form-group">
+            <label>開催日時 (Date)</label>
+            <input type="text" id="addEventDate" class="cyber-input" placeholder="例: 2026/06/01 19:00">
+        </div>
+        <div class="form-group">
+            <label>一言説明 (Description)</label>
+            <input type="text" id="addEventDesc" class="cyber-input" placeholder="例: 重要な議題があります">
+        </div>
+        <div class="form-group" style="display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+                <label>定員 (Capacity)</label>
+                <input type="number" id="addEventCapacity" class="cyber-input" placeholder="例: 10" min="1">
+            </div>
+            <div style="flex: 1;">
+                <label>主催者背番号 (Host)</label>
+                <input type="text" id="addEventHost" class="cyber-input" placeholder="例: 001">
+            </div>
+        </div>
+        <button class="cyber-btn" id="btn-add-event" style="width: 100%; margin-top: 1rem;" onclick="submitAddEvent()">イベント作成</button>
+    `;
+    openModal(html);
+}
+
+async function submitAddEvent() {
+    const title = document.getElementById('addEventTitle').value;
+    const date = document.getElementById('addEventDate').value;
+    const description = document.getElementById('addEventDesc').value;
+    const capacity = document.getElementById('addEventCapacity').value;
+    const host = document.getElementById('addEventHost').value;
+    
+    if(!title || !date || !capacity || !host) {
+        alert("必須項目(イベント名、日時、定員、主催者)を入力してください。");
+        return;
+    }
+
+    document.getElementById('btn-add-event').disabled = true;
+    document.getElementById('btn-add-event').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 作成中...';
+    
+    const success = await sendAction('addEvent', { title, date, description, capacity, host });
+    if (success) {
+        closeModal();
+    }
+}
+
+async function confirmDeleteEvent(eventId) {
+    if(confirm("本当にこのイベントを削除しますか？")) {
+        modalBody.innerHTML = '<div style="text-align:center;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent-blue);"></i><p style="margin-top:1rem;">削除中...</p></div>';
+        const success = await sendAction('deleteEvent', { eventId });
+        if (success) {
+            closeModal();
+        }
+    }
+}
+
+// ==========================================
+// MEMBER EDIT MODAL & ACTIONS
+// ==========================================
+function openEditMemberModal(squadNum, fieldName, currentVal) {
+    let fieldLabel = '';
+    let note = '';
+    if(fieldName === 'typingScore') {
+        fieldLabel = 'タイピング記録';
+    } else if(fieldName === 'badges') {
+        fieldLabel = 'バッジ';
+        note = '<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">※カンマ区切りで入力してください</p>';
+    } else if(fieldName === 'readingRecord') {
+        fieldLabel = '読書記録';
+        note = '<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">※カンマ区切りで入力してください</p>';
+    }
+
+    let html = `
+        <h2 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-pen-to-square"></i> メンバー情報編集</h2>
+        <p style="margin-bottom: 1.5rem;">背番号: <strong>${squadNum}</strong></p>
+        
+        <div class="form-group">
+            <label>${fieldLabel}</label>
+            ${note}
+            <input type="text" id="editMemberInput" class="cyber-input" value="${currentVal}">
+        </div>
+        
+        <button class="cyber-btn" id="btn-edit-member" style="width: 100%; margin-top: 1rem;" onclick="submitMemberEdit('${squadNum}', '${fieldName}')">更新する</button>
+    `;
+    openModal(html);
+}
+
+async function submitMemberEdit(squadNum, fieldName) {
+    const newValue = document.getElementById('editMemberInput').value;
+    
+    document.getElementById('btn-edit-member').disabled = true;
+    document.getElementById('btn-edit-member').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 更新中...';
+    
+    const success = await sendAction('updateMemberField', { squadNum, fieldName, newValue });
     if (success) {
         closeModal();
     }

@@ -301,13 +301,14 @@ body {
 .profile-header {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
     margin-bottom: 1.5rem;
 }
 
 .avatar {
     width: 80px;
     height: 80px;
+    flex-shrink: 0;
     border-radius: 50%;
     background: var(--accent-yellow);
     border: var(--border-width) solid var(--border-color);
@@ -459,4 +460,167 @@ body {
 
 .view-animate {
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; /* Pop bouncy effect */
+}
+
+/* Event Attendees Tags */
+.event-attendees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    max-height: 70px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.event-attendees::-webkit-scrollbar {
+    width: 6px;
+}
+.event-attendees::-webkit-scrollbar-track {
+    background: #f4f4f4;
+    border-radius: 3px;
+    border: 1px solid var(--border-color);
+}
+.event-attendees::-webkit-scrollbar-thumb {
+    background: var(--text-main);
+    border-radius: 3px;
+}
+
+.attendee-tag {
+    background-color: #222222;
+    border: 2px solid #a8ffb2;
+    color: #a8ffb2;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: var(--font-body);
+    box-shadow: 2px 2px 0px #a8ffb2;
+    transition: transform var(--transition-speed) ease;
+}
+
+.attendee-tag:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px #a8ffb2;
+}
+
+/* Member Accordion UI */
+.member-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease, border-top 0.3s ease;
+}
+
+.member-details.open {
+    max-height: 800px;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px dashed var(--border-color);
+}
+
+.member-edit-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.accordion-icon .transition-icon {
+    transition: transform 0.3s ease;
+}
+
+.accordion-icon.open .transition-icon {
+    transform: rotate(180deg);
+}
+
+/* ==========================================
+   Responsive Design (Mobile)
+   ========================================== */
+@media (max-width: 768px) {
+    /* 1. Navigation */
+    .topbar {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .main-nav {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.5rem;
+        /* Custom scrollbar for nav */
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) transparent;
+    }
+    
+    .main-nav::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .main-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .main-nav::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 4px;
+    }
+
+    /* 2. Grid Layout */
+    .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    /* 3. Modal */
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    /* 4. Spacing and Fonts */
+    .container {
+        margin: 1.5rem auto;
+        padding: 0 0.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .pop-text {
+        font-size: 2rem;
+    }
+
+    /* Profile Header Stack */
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .profile-header .profile-info {
+        align-items: center !important;
+    }
+    
+    .profile-header .profile-info > div {
+        justify-content: center;
+    }
+    
+    .profile-header .accordion-icon {
+        margin-right: 0 !important;
+        width: 100%;
+        justify-content: center;
+    }
 }
