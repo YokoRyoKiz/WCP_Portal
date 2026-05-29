@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURATION & STATE
 // ==========================================
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxbtJFyrBLgl60SdUTE-uGMoLs2lKswW74IfjIFyD0Tue8IhGeNHT6WYsc-RudS2ARV/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwWioCbK9oaPT5rKIikLn9o0N5egYNFj_QlQ-CGW5VHzPBUAPfxfTzIPE51nqgomxGL/exec';
 let currentView = 'home';
 let viewHistory = [];
 let isLoading = true;
@@ -248,11 +248,18 @@ function renderRoster() {
                             <div class="detail-row">
                                 <div style="flex: 1;">
                                     <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">読書記録</h4>
-                                    <div style="font-size: 0.9rem;">
-                                        ${member.readingRecord && member.readingRecord.length > 0 ? member.readingRecord.map(rec => `<div style="margin-bottom:0.2rem;">・${rec}</div>`).join('') : '<span style="color: var(--text-muted); font-size: 0.8rem;">なし</span>'}
+                                    <div style="font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                                        ${(() => {
+                                            const memberReviews = mockData.reviews.filter(r => String(r.squadNumber) === String(member.squadNumber));
+                                            if (memberReviews.length > 0) {
+                                                return memberReviews.map(rev => `<a href="${rev.docLink}" target="_blank" rel="noopener noreferrer" class="cyber-btn" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-lines"></i> ${rev.bookTitle}</a>`).join('');
+                                            } else {
+                                                return '<span style="color: var(--text-muted); font-size: 0.8rem;">なし</span>';
+                                            }
+                                        })()}
                                     </div>
                                 </div>
-                                <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openEditMemberModal('${member.squadNumber}', 'readingRecord', '${(member.readingRecord || []).join(',')}')"><i class="fa-solid fa-pen"></i> 編集</button>
+                                <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openAddReviewModal('${member.squadNumber}')"><i class="fa-solid fa-plus"></i> 追加</button>
                             </div>
                         </div>
                     </div>
@@ -567,6 +574,97 @@ async function submitMemberEdit(squadNum, fieldName) {
     document.getElementById('btn-edit-member').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 更新中...';
     
     const success = await sendAction('updateMemberField', { squadNum, fieldName, newValue });
+    if (success) {
+        closeModal();
+    }
+}
+
+// ==========================================
+// ADD REVIEW MODAL & ACTIONS
+// ==========================================
+function openAddReviewModal(squadNum) {
+    let bookOptions = mockData.books.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
+    
+    let html = `
+        <h2 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-book-open"></i> 読書感想文の追加</h2>
+        
+        <div class="form-group">
+            <label>背番号 (Squad Number)</label>
+            <input type="text" id="addReviewSquadNum" class="cyber-input" value="${squadNum}" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>本のタイトル</label>
+            <select id="addReviewBookSelect" class="cyber-input" onchange="toggleManualBookTitle()">
+                <option value="">選択してください</option>
+                ${bookOptions}
+                <option value="other">その他（手動入力）</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="manualBookTitleGroup" style="display: none;">
+            <label>本のタイトル (手動入力)</label>
+            <input type="text" id="addReviewManualTitle" class="cyber-input" placeholder="本のタイトルを入力">
+        </div>
+        
+        <div class="form-group">
+            <label>感想文リンク (ドキュメントURL)</label>
+            <input type="url" id="addReviewDocLink" class="cyber-input" placeholder="https://docs.google.com/...">
+        </div>
+        
+        <button class="cyber-btn" id="btn-add-review" style="width: 100%; margin-top: 1rem;" onclick="submitAddReview()">追加する</button>
+    `;
+    openModal(html);
+}
+
+function toggleManualBookTitle() {
+    const select = document.getElementById('addReviewBookSelect');
+    const manualGroup = document.getElementById('manualBookTitleGroup');
+    if(select.value === 'other') {
+        manualGroup.style.display = 'block';
+    } else {
+        manualGroup.style.display = 'none';
+    }
+}
+
+async function submitAddReview() {
+    const squadNum = document.getElementById('addReviewSquadNum').value;
+    const select = document.getElementById('addReviewBookSelect');
+    const manualTitle = document.getElementById('addReviewManualTitle').value;
+    const docLink = document.getElementById('addReviewDocLink').value;
+    
+    let bookId = '';
+    let bookTitle = '';
+    
+    if (select.value === '') {
+        alert("本のタイトルを選択してください。");
+        return;
+    } else if (select.value === 'other') {
+        if (!manualTitle.trim()) {
+            alert("本のタイトルを手動入力してください。");
+            return;
+        }
+        bookTitle = manualTitle.trim();
+    } else {
+        bookId = select.value;
+        bookTitle = select.options[select.selectedIndex].text;
+    }
+    
+    if (!docLink.trim()) {
+        alert("感想文リンクを入力してください。");
+        return;
+    }
+
+    document.getElementById('btn-add-review').disabled = true;
+    document.getElementById('btn-add-review').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 送信中...';
+    
+    const success = await sendAction('addReview', { 
+        squadNumber: squadNum, 
+        bookId: bookId, 
+        bookTitle: bookTitle, 
+        docLink: docLink.trim() 
+    });
+    
     if (success) {
         closeModal();
     }
