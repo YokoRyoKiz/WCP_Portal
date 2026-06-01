@@ -120,8 +120,6 @@ async function sendAction(action, payload) {
         
         const result = await response.json();
         if(result.success) {
-            // 成功したらデータを再取得して画面を更新
-            await fetchPortalData();
             return true;
         } else {
             alert("エラー: " + result.error);
@@ -382,6 +380,13 @@ async function submitBorrow(bookId) {
     
     const success = await sendAction('borrowBook', { bookId, squadNum, dueDate });
     if (success) {
+        const book = mockData.books.find(b => b.id === bookId);
+        if (book) {
+            book.status = 'borrowed';
+            book.borrower = squadNum;
+            book.dueDate = dueDate;
+        }
+        navigateTo(currentView);
         closeModal();
     }
 }
@@ -389,7 +394,16 @@ async function submitBorrow(bookId) {
 async function returnBook(bookId) {
     if(confirm("この本を返却しますか？")) {
         // ボタンを無効化する代わりに少し待つUIも可能ですが、シンプルに同期
-        await sendAction('returnBook', { bookId });
+        const success = await sendAction('returnBook', { bookId });
+        if (success) {
+            const book = mockData.books.find(b => b.id === bookId);
+            if (book) {
+                book.status = 'available';
+                book.borrower = '';
+                book.dueDate = '';
+            }
+            navigateTo(currentView);
+        }
     }
 }
 
@@ -443,6 +457,18 @@ async function submitAttendance(eventId, status) {
 
     const success = await sendAction('updateAttendance', { eventId, squadNum, status });
     if (success) {
+        const event = mockData.events.find(e => e.id === eventId);
+        if (event) {
+            if (!event.attendees) event.attendees = [];
+            if (status === 'attend') {
+                if (!event.attendees.includes(squadNum)) {
+                    event.attendees.push(squadNum);
+                }
+            } else if (status === 'absent') {
+                event.attendees = event.attendees.filter(a => a !== squadNum);
+            }
+        }
+        navigateTo(currentView);
         closeModal();
     }
 }
@@ -522,6 +548,16 @@ async function submitAddEvent() {
     
     const success = await sendAction('addEvent', { title, date, description, capacity, host });
     if (success) {
+        mockData.events.push({
+            id: 'evt_' + Date.now(),
+            title: title,
+            date: date,
+            description: description,
+            capacity: capacity,
+            host: host,
+            attendees: []
+        });
+        navigateTo(currentView);
         closeModal();
     }
 }
@@ -531,6 +567,8 @@ async function confirmDeleteEvent(eventId) {
         modalBody.innerHTML = '<div style="text-align:center;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent-blue);"></i><p style="margin-top:1rem;">削除中...</p></div>';
         const success = await sendAction('deleteEvent', { eventId });
         if (success) {
+            mockData.events = mockData.events.filter(e => e.id !== eventId);
+            navigateTo(currentView);
             closeModal();
         }
     }
@@ -575,6 +613,15 @@ async function submitMemberEdit(squadNum, fieldName) {
     
     const success = await sendAction('updateMemberField', { squadNum, fieldName, newValue });
     if (success) {
+        const member = mockData.members.find(m => String(m.squadNumber) === String(squadNum));
+        if (member) {
+            if (fieldName === 'badges') {
+                member[fieldName] = newValue ? newValue.split(',').map(s => s.trim()) : [];
+            } else {
+                member[fieldName] = newValue;
+            }
+        }
+        navigateTo(currentView);
         closeModal();
     }
 }
@@ -666,6 +713,22 @@ async function submitAddReview() {
     });
     
     if (success) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        mockData.reviews.push({
+            id: 'rev_' + Date.now(),
+            squadNumber: squadNum,
+            reviewer: squadNum,
+            bookId: bookId,
+            bookTitle: bookTitle,
+            docLink: docLink.trim(),
+            date: `${yyyy}/${mm}/${dd}`,
+            text: ''
+        });
+        navigateTo(currentView);
         closeModal();
     }
 }
