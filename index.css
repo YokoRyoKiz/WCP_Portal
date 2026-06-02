@@ -544,6 +544,46 @@ body {
 }
 
 /* ==========================================
+   Schedule Tabs
+   ========================================== */
+.schedule-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: #ffffff;
+    border: var(--border-width) solid var(--border-color);
+    padding: 0.3rem;
+    border-radius: 12px;
+    box-shadow: var(--hard-shadow);
+}
+
+.schedule-tab-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: 2px solid transparent;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.schedule-tab-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.schedule-tab-btn.active {
+    background: var(--accent-yellow);
+    color: var(--text-main);
+    border: 2px solid var(--border-color);
+    box-shadow: 2px 2px 0px var(--border-color);
+}
+
+/* ==========================================
    Responsive Design (Mobile)
    ========================================== */
 @media (max-width: 768px) {

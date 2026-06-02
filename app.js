@@ -54,6 +54,7 @@ function navigateTo(view, isBack = false) {
         case 'books': renderBooks(); break;
         case 'roster': renderRoster(); break;
         case 'schedule': renderSchedule(); break;
+        case 'about': renderAbout(); break;
     }
 }
 
@@ -167,6 +168,20 @@ function renderHome() {
     appRoot.innerHTML = html;
 }
 
+function renderAbout() {
+    let html = `
+        <div class="view-animate">
+            ${getBackButtonHtml()}
+            <h1 class="section-title">WCPについて</h1>
+            <div class="cyber-card" style="text-align: center; padding: 3rem;">
+                <h2 style="color: var(--accent-blue); margin-bottom: 1rem;">現在準備中です</h2>
+                <i class="fa-solid fa-person-digging" style="font-size: 4rem; color: var(--text-muted);"></i>
+            </div>
+        </div>
+    `;
+    appRoot.innerHTML = html;
+}
+
 function renderBooks() {
     let html = `
         <div class="view-animate">
@@ -240,7 +255,6 @@ function renderRoster() {
                                         ${member.badges && member.badges.length > 0 ? member.badges.map(badge => `<span class="badge">${badge}</span>`).join('') : '<span style="color: var(--text-muted); font-size: 0.8rem;">なし</span>'}
                                     </div>
                                 </div>
-                                <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openEditMemberModal('${member.squadNumber}', 'badges', '${(member.badges || []).join(',')}')"><i class="fa-solid fa-pen"></i> 編集</button>
                             </div>
 
                             <div class="detail-row">
@@ -279,14 +293,93 @@ function toggleMemberDetails(squadNum) {
     }
 }
 
+let currentCalendarDate = new Date();
+let currentScheduleView = 'calendar';
+
+window.changeCalendarMonth = function(offset) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
+    renderSchedule();
+}
+
+window.switchScheduleView = function(view) {
+    currentScheduleView = view;
+    renderSchedule();
+}
+
 function renderSchedule() {
-    let html = `
-        <div class="view-animate">
-            ${getBackButtonHtml()}
-            <h1 class="section-title" style="margin-bottom: 1rem;">イベントスケジュール</h1>
-            <div style="text-align: right; margin-bottom: 1.5rem;">
-                <button class="cyber-btn" onclick="openPasswordModal('addEvent')"><i class="fa-solid fa-plus"></i> イベントを追加</button>
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    let contentHtml = '';
+    
+    if (currentScheduleView === 'calendar') {
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay(); // 0 is Sunday
+        
+        let calendarHtml = `
+            <div class="cyber-card" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button class="cyber-btn" style="padding: 0.5rem 1rem;" onclick="changeCalendarMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h3 style="margin: 0; font-size: 1.5rem;">${year}年 ${month + 1}月</h3>
+                    <button class="cyber-btn" style="padding: 0.5rem 1rem;" onclick="changeCalendarMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center;">
+                    <div style="font-weight: bold; color: #ff6b6b;">日</div>
+                    <div style="font-weight: bold;">月</div>
+                    <div style="font-weight: bold;">火</div>
+                    <div style="font-weight: bold;">水</div>
+                    <div style="font-weight: bold;">木</div>
+                    <div style="font-weight: bold;">金</div>
+                    <div style="font-weight: bold; color: #4facfe;">土</div>
+        `;
+        
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            calendarHtml += `<div style="padding: 0.5rem; background: rgba(0,0,0,0.02); border-radius: 4px;"></div>`;
+        }
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}/${String(month + 1).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+            
+            const dayEvents = mockData.events.filter(e => {
+                if (!e.date) return false;
+                const normalizedDate = e.date.replace(/-/g, '/');
+                return normalizedDate.startsWith(dateStr);
+            });
+            
+            let eventsHtml = dayEvents.map(e => `
+                <div style="font-size: 0.75rem; font-weight: bold; background: var(--accent-blue); color: white; border-radius: 4px; margin-top: 4px; padding: 4px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; transition: transform 0.2s; box-shadow: 1px 1px 0px var(--border-color);" title="${e.title}" onclick="openAttendanceModal('${e.id}')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    ${e.title}
+                </div>
+            `).join('');
+            
+            const today = new Date();
+            const isToday = (day === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+            const borderStyle = isToday ? 'border: 2px solid var(--accent-blue);' : 'border: 1px solid var(--border-color);';
+            
+            calendarHtml += `
+                <div style="padding: 0.5rem; background: #fff; border-radius: 4px; min-height: 80px; ${borderStyle} display: flex; flex-direction: column;">
+                    <div style="text-align: left; font-weight: bold; font-size: 0.9rem; ${isToday ? 'color: var(--accent-blue);' : ''}">${day}</div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">
+                        ${eventsHtml}
+                    </div>
+                </div>
+            `;
+        }
+        
+        const remainingSlots = (7 - ((startingDayOfWeek + daysInMonth) % 7)) % 7;
+        for (let i = 0; i < remainingSlots; i++) {
+            calendarHtml += `<div style="padding: 0.5rem; background: rgba(0,0,0,0.02); border-radius: 4px;"></div>`;
+        }
+        
+        calendarHtml += `
+                </div>
             </div>
+        `;
+        contentHtml = calendarHtml;
+    } else if (currentScheduleView === 'event') {
+        let eventListHtml = `
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 ${mockData.events.map(event => {
                     const attendeesCount = event.attendees ? event.attendees.length : 0;
@@ -323,6 +416,32 @@ function renderSchedule() {
                     `;
                 }).join('')}
             </div>
+        `;
+        contentHtml = eventListHtml;
+    }
+
+    let tabsHtml = `
+        <div class="schedule-tabs">
+            <button class="schedule-tab-btn ${currentScheduleView === 'calendar' ? 'active' : ''}" onclick="switchScheduleView('calendar')">
+                <i class="fa-solid fa-calendar"></i> カレンダー
+            </button>
+            <button class="schedule-tab-btn ${currentScheduleView === 'event' ? 'active' : ''}" onclick="switchScheduleView('event')">
+                <i class="fa-solid fa-list"></i> イベント一覧
+            </button>
+        </div>
+    `;
+
+    let html = `
+        <div class="view-animate">
+            ${getBackButtonHtml()}
+            <h1 class="section-title" style="margin-bottom: 1rem;">イベントスケジュール</h1>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                ${tabsHtml}
+                <button class="cyber-btn" onclick="openPasswordModal('addEvent')"><i class="fa-solid fa-plus"></i> イベントを追加</button>
+            </div>
+            
+            ${contentHtml}
         </div>
     `;
     appRoot.innerHTML = html;
@@ -580,25 +699,44 @@ async function confirmDeleteEvent(eventId) {
 function openEditMemberModal(squadNum, fieldName, currentVal) {
     let fieldLabel = '';
     let note = '';
+    let inputHtml = '';
     if(fieldName === 'typingScore') {
-        fieldLabel = 'タイピング記録';
-    } else if(fieldName === 'badges') {
-        fieldLabel = 'バッジ';
-        note = '<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">※カンマ区切りで入力してください</p>';
-    } else if(fieldName === 'readingRecord') {
-        fieldLabel = '読書記録';
-        note = '<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">※カンマ区切りで入力してください</p>';
+        inputHtml = `
+            <div class="form-group">
+                <label>挑戦したコース</label>
+                <select id="typingCourse" class="cyber-input">
+                    <option value="3000円">3000円</option>
+                    <option value="5000円">5000円</option>
+                    <option value="10000円">10000円</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>自分の記録</label>
+                <input type="number" id="typingRecord" class="cyber-input" placeholder="例: 4500">
+            </div>
+        `;
+    } else {
+        if(fieldName === 'badges') {
+            fieldLabel = 'バッジ';
+            note = '<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">※カンマ区切りで入力してください</p>';
+        } else if(fieldName === 'readingRecord') {
+            fieldLabel = '読書記録';
+            note = '<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">※カンマ区切りで入力してください</p>';
+        }
+        inputHtml = `
+            <div class="form-group">
+                <label>${fieldLabel}</label>
+                ${note}
+                <input type="text" id="editMemberInput" class="cyber-input" value="${currentVal}">
+            </div>
+        `;
     }
 
     let html = `
         <h2 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-pen-to-square"></i> メンバー情報編集</h2>
         <p style="margin-bottom: 1.5rem;">背番号: <strong>${squadNum}</strong></p>
         
-        <div class="form-group">
-            <label>${fieldLabel}</label>
-            ${note}
-            <input type="text" id="editMemberInput" class="cyber-input" value="${currentVal}">
-        </div>
+        ${inputHtml}
         
         <button class="cyber-btn" id="btn-edit-member" style="width: 100%; margin-top: 1rem;" onclick="submitMemberEdit('${squadNum}', '${fieldName}')">更新する</button>
     `;
@@ -606,7 +744,18 @@ function openEditMemberModal(squadNum, fieldName, currentVal) {
 }
 
 async function submitMemberEdit(squadNum, fieldName) {
-    const newValue = document.getElementById('editMemberInput').value;
+    let newValue;
+    if (fieldName === 'typingScore') {
+        const course = document.getElementById('typingCourse').value;
+        const record = document.getElementById('typingRecord').value;
+        if (!record) {
+            alert("自分の記録を入力してください。");
+            return;
+        }
+        newValue = `${record} / ${course}`;
+    } else {
+        newValue = document.getElementById('editMemberInput').value;
+    }
     
     document.getElementById('btn-edit-member').disabled = true;
     document.getElementById('btn-edit-member').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 更新中...';
