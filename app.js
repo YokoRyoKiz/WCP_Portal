@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURATION & STATE
 // ==========================================
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwWioCbK9oaPT5rKIikLn9o0N5egYNFj_QlQ-CGW5VHzPBUAPfxfTzIPE51nqgomxGL/exec';
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyj_jRgIKDnUirbnXpypB1IJ9QnkdYblXg40vkmkzZrcHrRc53Mjc15Q6LSBO1Mw8j4/exec';
 let currentView = 'home';
 let viewHistory = [];
 let isLoading = true;
@@ -16,6 +16,68 @@ let mockData = {
 };
 
 // ==========================================
+// CATEGORY REQUIREMENTS
+// ==========================================
+const CATEGORY_REQUIREMENTS = {
+    'Beginner': [
+        { name: '社会人基礎能力テストで合格', icon: 'fa-clipboard-check' },
+        { name: 'メール文テストで合格', icon: 'fa-envelope-circle-check' },
+        { name: '議事録テストで合格', icon: 'fa-file-signature' },
+        { name: '経理テストで合格', icon: 'fa-calculator' },
+        { name: '累計プロジェクトアサイン数1以上', icon: 'fa-briefcase' },
+        { name: '読書1冊以上', icon: 'fa-book-open' },
+        { name: 'GPA1以上', icon: 'fa-graduation-cap' }
+    ],
+    'Member': [
+        { name: '企画書テストで合格', icon: 'fa-lightbulb' },
+        { name: 'メール文ロープレテストで合格', icon: 'fa-id-card-clip' },
+        { name: '議事録ロープレテストで合格', icon: 'fa-file-lines' },
+        { name: '経理ロープレテストで合格', icon: 'fa-sack-dollar' },
+        { name: 'Grow5以上', icon: 'fa-chart-line' },
+        { name: '課題図書5冊制覇', icon: 'fa-book-atlas' },
+        { name: 'タイピング3000円コースクリア', icon: 'fa-keyboard' },
+        { name: 'メンバーアサイン数1人以上', icon: 'fa-user-plus' },
+        { name: '累計プロジェクトアサイン数 3以上', icon: 'fa-network-wired' },
+        { name: 'Chief1人以上の推薦', icon: 'fa-thumbs-up' }
+    ],
+    'Assistant': [
+        { name: 'ファシリテーションテストで合格', icon: 'fa-comments' },
+        { name: '企画書ロープレテストで合格', icon: 'fa-paste' },
+        { name: 'Grow6以上', icon: 'fa-chart-pie' },
+        { name: '本を月に1冊以上読む', icon: 'fa-book-bookmark' },
+        { name: 'タイピング5000円コースクリア', icon: 'fa-keyboard' },
+        { name: 'メンバーアサイン数3人以上', icon: 'fa-users-gear' },
+        { name: '累計プロジェクトアサイン数 4以上', icon: 'fa-folder-tree' },
+        { name: '鬼プロ修了', icon: 'fa-fire' },
+        { name: 'Core2人以上の推薦', icon: 'fa-star' }
+    ],
+    'Chief': [
+        { name: '営業テストで合格', icon: 'fa-handshake' },
+        { name: 'AIテストで合格', icon: 'fa-robot' },
+        { name: 'Grow7以上', icon: 'fa-ranking-star' },
+        { name: '本を月に1冊以上読む(Core)', icon: 'fa-book-open-reader' },
+        { name: 'タイピング10000円コースクリア', icon: 'fa-keyboard' },
+        { name: 'メンバーアサイン数5人以上', icon: 'fa-users-viewfinder' },
+        { name: '累計プロジェクトアサイン数 6以上', icon: 'fa-diagram-project' },
+        { name: '鬼修了', icon: 'fa-skull' },
+        { name: '名刺100枚配りきる', icon: 'fa-address-card' },
+        { name: 'Core過半数と大人', icon: 'fa-crown' }
+    ]
+};
+
+function getNextCategoryInfo(currentCategory) {
+    const categories = ['Beginner', 'Member', 'Assistant', 'Chief', 'Core'];
+    const idx = categories.indexOf(currentCategory);
+    if (idx >= 0 && idx < categories.length - 1) {
+        return {
+            name: categories[idx + 1],
+            requirements: CATEGORY_REQUIREMENTS[currentCategory] || []
+        };
+    }
+    return null;
+}
+
+// ==========================================
 // ROUTING & NAVIGATION
 // ==========================================
 const appRoot = document.getElementById('app-root');
@@ -24,6 +86,13 @@ const navButtons = document.querySelectorAll('.nav-btn');
 navButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
         const view = e.currentTarget.dataset.view;
+        
+        // SPAページ(index.html)以外からアクセスされた場合は、index.htmlに遷移
+        if (!appRoot) {
+            window.location.href = `index.html?view=${view}`;
+            return;
+        }
+
         if(currentView !== view) {
             navigateTo(view);
         }
@@ -54,7 +123,6 @@ function navigateTo(view, isBack = false) {
         case 'books': renderBooks(); break;
         case 'roster': renderRoster(); break;
         case 'schedule': renderSchedule(); break;
-        case 'about': renderAbout(); break;
     }
 }
 
@@ -140,42 +208,60 @@ async function sendAction(action, payload) {
 function renderHome() {
     let html = `
         <div class="view-animate">
-            ${getBackButtonHtml()}
-            <h1 class="section-title">ターミナルダッシュボード</h1>
-            <div class="grid-2">
-                <div class="cyber-card">
-                    <h3><i class="fa-solid fa-satellite-dish neon-text"></i> システムニュース</h3>
-                    <div class="mt-4">
+            <h1 class="section-title">DASHBOARD</h1>
+            
+            <!-- Marquee for Goal -->
+            <div class="marquee-container">
+                <div class="marquee-content">
+                    <span class="marquee-text">ずとずとずとずとずと夢中</span>
+                    <span class="marquee-text">ずとずとずとずとずと夢中</span>
+                    <span class="marquee-text">ずとずとずとずとずと夢中</span>
+                    <span class="marquee-text">ずとずとずとずとずと夢中</span>
+                    <span class="marquee-text">ずとずとずとずとずと夢中</span>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 4rem;">
+                <div>
+                    <h3 style="font-family: var(--font-heading); font-size: 4rem; margin-bottom: 1rem; color: var(--accent-blue); line-height: 1;">01_ PHILOSOPHY</h3>
+                    <div style="font-family: var(--font-mono); font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); border-left: 2px solid var(--border-color); padding-left: 1rem;">
+                        WCPは、各々が持てる力を最大限に発揮し、共に成長し合うための場です。<br><br>常に新しいことに挑戦し、失敗を恐れず前に進む姿勢を大切にしています。メンバー一人ひとりが自律し、プロフェッショナルとしての自覚を持つことが求められます。
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="font-family: var(--font-heading); font-size: 4rem; margin-bottom: 1rem; color: var(--accent-yellow); line-height: 1;">02_ SYS_NEWS</h3>
+                    <div class="news-list" style="font-family: var(--font-mono); border-left: 2px solid var(--border-color); padding-left: 1rem; max-height: 250px; overflow-y: auto;">
                         ${mockData.news.map(item => `
                             <div class="news-item">
                                 <div class="news-date">${item.date}</div>
-                                <div>${item.text}</div>
+                                <div style="color: var(--text-main); font-size: 1.1rem;">${item.text}</div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
-                <div class="cyber-card">
-                    <h3><i class="fa-solid fa-link neon-text"></i> クイックリンク</h3>
-                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
-                        <button class="cyber-btn" onclick="navigateTo('books')">図書管理へアクセス</button>
-                        <button class="cyber-btn" onclick="navigateTo('roster')">名簿を確認</button>
-                        <button class="cyber-btn" onclick="navigateTo('schedule')">スケジュールを確認</button>
-                    </div>
-                </div>
             </div>
-        </div>
-    `;
-    appRoot.innerHTML = html;
-}
 
-function renderAbout() {
-    let html = `
-        <div class="view-animate">
-            ${getBackButtonHtml()}
-            <h1 class="section-title">WCPについて</h1>
-            <div class="cyber-card" style="text-align: center; padding: 3rem;">
-                <h2 style="color: var(--accent-blue); margin-bottom: 1rem;">現在準備中です</h2>
-                <i class="fa-solid fa-person-digging" style="font-size: 4rem; color: var(--text-muted);"></i>
+            <h2 class="section-title">QUICK_ACCESS</h2>
+            <div class="typo-menu-list">
+                <div class="typo-menu-item" onclick="window.location.href='about.html'">
+                    <span class="typo-menu-index">01</span> [ ABOUT_WCP ]
+                </div>
+                <div class="typo-menu-item" onclick="window.location.href='system.html'">
+                    <span class="typo-menu-index">02</span> [ SYSTEM ]
+                </div>
+                <div class="typo-menu-item" onclick="alert('メール文マニュアル（Google Doc連携予定）');">
+                    <span class="typo-menu-index">03</span> [ MANUAL: MAIL ]
+                </div>
+                <div class="typo-menu-item" onclick="alert('企画書マニュアル（Google Doc連携予定）');">
+                    <span class="typo-menu-index">04</span> [ MANUAL: PROPOSAL ]
+                </div>
+                <div class="typo-menu-item" onclick="alert('経理マニュアル（Google Doc連携予定）');">
+                    <span class="typo-menu-index">05</span> [ MANUAL: ACCOUNTING ]
+                </div>
+                <div class="typo-menu-item" onclick="alert('ツールマニュアル（Google Doc連携予定）');">
+                    <span class="typo-menu-index">06</span> [ MANUAL: TOOLS ]
+                </div>
             </div>
         </div>
     `;
@@ -186,7 +272,7 @@ function renderBooks() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title">図書データベース</h1>
+            <h1 class="section-title">BOOKS_DB</h1>
             <div class="grid-3">
                 ${mockData.books.map(book => `
                     <div class="cyber-card">
@@ -222,7 +308,7 @@ function renderRoster() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title">メンバー名簿</h1>
+            <h1 class="section-title">ROSTER</h1>
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 ${mockData.members.map(member => `
                     <div class="cyber-card member-card" style="cursor: pointer;" onclick="toggleMemberDetails('${member.squadNumber}')">
@@ -240,6 +326,29 @@ function renderRoster() {
                             </div>
                         </div>
                         <div id="details-${member.squadNumber}" class="member-details">
+                            <div class="detail-row" style="flex-direction: column;">
+                                ${(() => {
+                                    const nextCatInfo = getNextCategoryInfo(member.category);
+                                    if (!nextCatInfo) {
+                                        return `<div style="text-align: center; margin: 1rem 0; width: 100%; font-weight: bold; color: var(--accent-blue); text-shadow: 1px 1px 0px var(--border-color); letter-spacing: 2px;"><i class="fa-solid fa-crown" style="color: gold;"></i> ★すべてのカテゴリー条件を達成しました！</div>`;
+                                    }
+                                    const reqs = nextCatInfo.requirements;
+                                    const iconsHtml = reqs.map(req => {
+                                        const isCompleted = member[req.name] === true || member[req.name] === "TRUE";
+                                        return `<div class="task-icon ${isCompleted ? 'unlocked' : 'locked'}" data-tooltip="${req.name}"><i class="fa-solid ${req.icon}"></i></div>`;
+                                    }).join('');
+                                    return `
+                                        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: 0.5rem;">
+                                            <h4 style="font-size: 0.8rem; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 0;"><i class="fa-solid fa-turn-up"></i> Next Step: ${nextCatInfo.name}への道</h4>
+                                            <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openEditTasksModal('${member.squadNumber}', '${member.category}')"><i class="fa-solid fa-list-check"></i> 進捗更新</button>
+                                        </div>
+                                        <div class="task-icons-container">
+                                            ${iconsHtml}
+                                        </div>
+                                    `;
+                                })()}
+                            </div>
+                            
                             <div class="detail-row">
                                 <div>
                                     <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">タイピング記録</h4>
@@ -272,6 +381,18 @@ function renderRoster() {
                                     </div>
                                 </div>
                                 <button class="cyber-btn member-edit-btn" onclick="event.stopPropagation(); openAddReviewModal('${member.squadNumber}')"><i class="fa-solid fa-plus"></i> 追加</button>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <div style="flex: 1;">
+                                    <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.3rem;">課題図書の進捗</h4>
+                                    <div class="task-icons-container" style="margin-top: 0.5rem; gap: 0.5rem;">
+                                        ${['K-01', 'K-02', 'K-03', 'K-04', 'K-05'].map((key, index) => {
+                                            const isCompleted = member[key] === true || member[key] === "TRUE";
+                                            return `<div class="task-icon ${isCompleted ? 'unlocked' : 'locked'}" data-tooltip="課題図書${index + 1}" style="width: 35px; height: 35px; font-size: 1rem;"><i class="fa-solid fa-book"></i></div>`;
+                                        }).join('')}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -393,6 +514,9 @@ function renderSchedule() {
                             <h3 style="margin-bottom: 0.5rem; color: var(--accent-blue);">${event.title}</h3>
                             ${event.description ? `<p style="margin-bottom: 0.5rem; font-size: 0.9rem;">${event.description}</p>` : ''}
                             <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">
+                                主催者: ${event.host ? event.host : '未指定'}
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">
                                 参加者:
                             </div>
                             <div class="event-attendees">
@@ -401,7 +525,7 @@ function renderSchedule() {
                                     : '<span style="color: var(--text-muted); font-size: 0.85rem;">まだいません</span>'}
                             </div>
                             <div style="font-size: 0.85rem; font-weight: bold; color: ${isFull ? '#ff6b6b' : 'var(--text-main)'};">
-                                現在の参加人数: ${attendeesCount} / ${capacity || '無制限'}
+                                ${capacity > 0 ? `現在の参加人数: ${attendeesCount} / ${capacity}` : '定員: 制限なし (募集中)'}
                             </div>
                         </div>
                         <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; min-width: 100px;">
@@ -434,7 +558,7 @@ function renderSchedule() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title" style="margin-bottom: 1rem;">イベントスケジュール</h1>
+            <h1 class="section-title" style="margin-bottom: 1rem;">SCHEDULE</h1>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 ${tabsHtml}
@@ -657,8 +781,8 @@ async function submitAddEvent() {
     const capacity = document.getElementById('addEventCapacity').value;
     const host = document.getElementById('addEventHost').value;
     
-    if(!title || !date || !capacity || !host) {
-        alert("必須項目(イベント名、日時、定員、主催者)を入力してください。");
+    if(!title || !date) {
+        alert("必須項目(イベント名、日時)を入力してください。");
         return;
     }
 
@@ -764,7 +888,7 @@ async function submitMemberEdit(squadNum, fieldName) {
     if (success) {
         const member = mockData.members.find(m => String(m.squadNumber) === String(squadNum));
         if (member) {
-            if (fieldName === 'badges') {
+            if (fieldName === 'badges' || fieldName === 'completedTasks') {
                 member[fieldName] = newValue ? newValue.split(',').map(s => s.trim()) : [];
             } else {
                 member[fieldName] = newValue;
@@ -776,10 +900,79 @@ async function submitMemberEdit(squadNum, fieldName) {
 }
 
 // ==========================================
+// TASKS EDIT MODAL & ACTIONS
+// ==========================================
+function openEditTasksModal(squadNum, currentCategory) {
+    const member = mockData.members.find(m => String(m.squadNumber) === String(squadNum));
+    const nextCatInfo = getNextCategoryInfo(currentCategory);
+    if (!nextCatInfo || !member) return;
+    
+    const reqs = nextCatInfo.requirements;
+    const completedTasks = member.completedTasks || [];
+    
+    let checkboxesHtml = reqs.map((req, index) => {
+        const isChecked = completedTasks.includes(req.name) ? 'checked' : '';
+        return `
+            <label style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem; background: #ffffff; border: var(--border-width) solid var(--border-color); border-radius: 8px; margin-bottom: 0.8rem; cursor: pointer; transition: all var(--transition-speed); box-shadow: 2px 2px 0px rgba(0,0,0,0.1);">
+                <input type="checkbox" class="task-checkbox" value="${req.name}" ${isChecked} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-blue);">
+                <div style="width: 30px; text-align: center; font-size: 1.2rem; color: var(--accent-blue);">
+                    <i class="fa-solid ${req.icon}"></i>
+                </div>
+                <span style="font-size: 0.95rem; font-weight: 700; flex: 1;">${req.name}</span>
+            </label>
+        `;
+    }).join('');
+
+    let html = `
+        <h2 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-list-check"></i> 進捗の更新</h2>
+        <p style="margin-bottom: 1.5rem;">背番号: <strong>${squadNum}</strong> <br>目標: <strong style="color: var(--accent-green);">${nextCatInfo.name}</strong></p>
+        
+        <div class="tasks-list" style="max-height: 400px; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1rem;">
+            ${checkboxesHtml}
+        </div>
+        
+        <button class="cyber-btn" id="btn-edit-tasks" style="width: 100%; margin-top: 1rem;" onclick="submitTasksEdit('${squadNum}')">進捗を保存</button>
+    `;
+    openModal(html);
+}
+
+async function submitTasksEdit(squadNum) {
+    const checkboxes = document.querySelectorAll('.task-checkbox');
+    const selectedTasks = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    const newValue = selectedTasks.join(',');
+    
+    document.getElementById('btn-edit-tasks').disabled = true;
+    document.getElementById('btn-edit-tasks').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+    
+    const success = await sendAction('updateMemberField', { squadNum, fieldName: 'completedTasks', newValue });
+    if (success) {
+        const member = mockData.members.find(m => String(m.squadNumber) === String(squadNum));
+        if (member) {
+            member.completedTasks = selectedTasks;
+        }
+        navigateTo(currentView);
+        closeModal();
+    }
+}
+
+// ==========================================
 // ADD REVIEW MODAL & ACTIONS
 // ==========================================
 function openAddReviewModal(squadNum) {
-    let bookOptions = mockData.books.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
+    const seenBooks = new Set();
+    let bookOptions = '';
+    for (const b of mockData.books) {
+        if (!b.id) continue;
+        const parts = b.id.split('-');
+        let identifier = b.id;
+        if (parts.length >= 2) {
+            identifier = parts[0] + '-' + parts[1];
+        }
+        if (!seenBooks.has(identifier)) {
+            seenBooks.add(identifier);
+            bookOptions += `<option value="${b.id}">${b.title}</option>`;
+        }
+    }
     
     let html = `
         <h2 style="margin-bottom: 1rem; color: var(--accent-blue);"><i class="fa-solid fa-book-open"></i> 読書感想文の追加</h2>
@@ -886,6 +1079,16 @@ async function submitAddReview() {
 // INIT
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    currentView = 'home';
-    fetchPortalData();
+    if (appRoot) {
+        const params = new URLSearchParams(window.location.search);
+        const viewParam = params.get('view');
+        currentView = viewParam ? viewParam : 'home';
+        
+        // URLパラメータをクリーンにする(任意)
+        if (viewParam) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        fetchPortalData();
+    }
 });
