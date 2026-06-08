@@ -208,7 +208,7 @@ async function sendAction(action, payload) {
 function renderHome() {
     let html = `
         <div class="view-animate">
-            <h1 class="section-title">DASHBOARD</h1>
+            <h1 class="section-title">ホーム</h1>
             
             <!-- Marquee for Goal -->
             <div class="marquee-container">
@@ -223,14 +223,19 @@ function renderHome() {
 
             <div class="grid-2" style="margin-bottom: 4rem;">
                 <div>
-                    <h3 style="font-family: var(--font-heading); font-size: 4rem; margin-bottom: 1rem; color: var(--accent-blue); line-height: 1;">01_ PHILOSOPHY</h3>
+                    <h3 style="font-family: var(--font-heading); font-size: 4rem; margin-bottom: 1rem; color: var(--accent-blue); line-height: 1;">01_ 理念</h3>
                     <div style="font-family: var(--font-mono); font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); border-left: 2px solid var(--border-color); padding-left: 1rem;">
-                        WCPは、各々が持てる力を最大限に発揮し、共に成長し合うための場です。<br><br>常に新しいことに挑戦し、失敗を恐れず前に進む姿勢を大切にしています。メンバー一人ひとりが自律し、プロフェッショナルとしての自覚を持つことが求められます。
+                        <strong style="color: var(--accent-blue);">理念:</strong><br>
+                        若者が自分たちの「やりたい」を追求し、自分の人生と自分に関わる人の人生全てを豊かにする。<br><br>
+                        <strong style="color: var(--accent-blue);">ビジョン:</strong><br>
+                        学生が多様でワクワクする将来の選択肢を、自分たちで創り出せる環境をつくる。<br><br>
+                        <strong style="color: var(--accent-blue);">ミッション:</strong><br>
+                        「街づくり」を通じて、地域や社会とつながりながら、若者が挑戦し成長する機会を提供する。
                     </div>
                 </div>
 
                 <div>
-                    <h3 style="font-family: var(--font-heading); font-size: 4rem; margin-bottom: 1rem; color: var(--accent-yellow); line-height: 1;">02_ SYS_NEWS</h3>
+                    <h3 style="font-family: var(--font-heading); font-size: 4rem; margin-bottom: 1rem; color: var(--accent-yellow); line-height: 1;">02_ お知らせ</h3>
                     <div class="news-list" style="font-family: var(--font-mono); border-left: 2px solid var(--border-color); padding-left: 1rem; max-height: 250px; overflow-y: auto;">
                         ${mockData.news.map(item => `
                             <div class="news-item">
@@ -242,25 +247,25 @@ function renderHome() {
                 </div>
             </div>
 
-            <h2 class="section-title">QUICK_ACCESS</h2>
+            <h2 class="section-title">クイックアクセス</h2>
             <div class="typo-menu-list">
                 <div class="typo-menu-item" onclick="window.location.href='about.html'">
-                    <span class="typo-menu-index">01</span> [ ABOUT_WCP ]
+                    <span class="typo-menu-index">01</span> [ WCPについて ]
                 </div>
                 <div class="typo-menu-item" onclick="window.location.href='system.html'">
-                    <span class="typo-menu-index">02</span> [ SYSTEM ]
+                    <span class="typo-menu-index">02</span> [ システム ]
                 </div>
-                <div class="typo-menu-item" onclick="alert('メール文マニュアル（Google Doc連携予定）');">
-                    <span class="typo-menu-index">03</span> [ MANUAL: MAIL ]
+                <div class="typo-menu-item" onclick="window.location.href='manual_email.html'">
+                    <span class="typo-menu-index">03</span> [ マニュアル: メール ]
                 </div>
-                <div class="typo-menu-item" onclick="alert('企画書マニュアル（Google Doc連携予定）');">
-                    <span class="typo-menu-index">04</span> [ MANUAL: PROPOSAL ]
+                <div class="typo-menu-item" onclick="window.location.href='manual_proposal.html'">
+                    <span class="typo-menu-index">04</span> [ マニュアル: 企画書 ]
                 </div>
-                <div class="typo-menu-item" onclick="alert('経理マニュアル（Google Doc連携予定）');">
-                    <span class="typo-menu-index">05</span> [ MANUAL: ACCOUNTING ]
+                <div class="typo-menu-item" onclick="window.location.href='manual_accounting.html'">
+                    <span class="typo-menu-index">05</span> [ マニュアル: 経理 ]
                 </div>
-                <div class="typo-menu-item" onclick="alert('ツールマニュアル（Google Doc連携予定）');">
-                    <span class="typo-menu-index">06</span> [ MANUAL: TOOLS ]
+                <div class="typo-menu-item" onclick="window.location.href='manual_tools.html'">
+                    <span class="typo-menu-index">06</span> [ マニュアル: ツール ]
                 </div>
             </div>
         </div>
@@ -272,7 +277,7 @@ function renderBooks() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title">BOOKS_DB</h1>
+            <h1 class="section-title">図書管理</h1>
             <div class="grid-3">
                 ${mockData.books.map(book => `
                     <div class="cyber-card">
@@ -308,7 +313,7 @@ function renderRoster() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title">ROSTER</h1>
+            <h1 class="section-title">メンバー名簿</h1>
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 ${mockData.members.map(member => `
                     <div class="cyber-card member-card" style="cursor: pointer;" onclick="toggleMemberDetails('${member.squadNumber}')">
@@ -558,7 +563,7 @@ function renderSchedule() {
     let html = `
         <div class="view-animate">
             ${getBackButtonHtml()}
-            <h1 class="section-title" style="margin-bottom: 1rem;">SCHEDULE</h1>
+            <h1 class="section-title" style="margin-bottom: 1rem;">スケジュール</h1>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 ${tabsHtml}
